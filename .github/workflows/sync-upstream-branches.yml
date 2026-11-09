@@ -1,0 +1,114 @@
+name: Sync upstream branches
+
+on:
+  schedule:
+    - cron: '17 3 * * *' # Daily at 12:17 Japan Standard Time (JST)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: upstream-branch-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out the fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Sync branches without force pushes or deletes
+        shell: bash
+        env:
+          UPSTREAM: kingcharleslzy-ai/dsh-purge
+        run: |
+          set -euo pipefail
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git remote add upstream "https://github.com/$UPSTREAM.git"
+          git fetch --no-tags --prune upstream '+refs/heads/*:refs/remotes/upstream/*'
+          git fetch --no-tags --prune origin '+refs/heads/*:refs/remotes/origin/*'
+
+          created=0
+          fast_forwarded=0
+          merged=0
+          unchanged=0
+          skipped=0
+
+          {
+            echo '## Upstream branch synchronization'
+            echo "Upstream: $UPSTREAM"
+            echo "Fork: $GITHUB_REPOSITORY"
+            echo ''
+            echo '| Branch | Result |'
+            echo '| --- | --- |'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          while IFS= read -r branch; do
+            [[ "$branch" == HEAD ]] && continue
+
+            source_ref="refs/remotes/upstream/$branch"
+            target_ref="refs/remotes/origin/$branch"
+            source_sha=$(git rev-parse "$source_ref^{commit}")
+
+            if ! git show-ref --verify --quiet "$target_ref"; then
+              git push origin "$source_sha:refs/heads/$branch"
+              created=$((created + 1))
+              echo "| $branch | New branch created |" >> "$GITHUB_STEP_SUMMARY"
+              continue
+            fi
+
+            target_sha=$(git rev-parse "$target_ref^{commit}")
+            if [[ "$target_sha" == "$source_sha" ]]; then
+              unchanged=$((unchanged + 1))
+
+            elif git merge-base --is-ancestor "$target_sha" "$source_sha"; then
+              # Fast-forward only. Never overwrite commits made in the fork.
+              git push origin "$source_sha:refs/heads/$branch"
+              fast_forwarded=$((fast_forwarded + 1))
+              echo "| $branch | Fast-forwarded |" >> "$GITHUB_STEP_SUMMARY"
+
+            elif [[ "$branch" == master ]]; then
+              # This workflow is stored on the fork's master branch, so that
+              # branch naturally has a fork-only commit. Preserve it by merging.
+              if git merge-base --is-ancestor "$source_sha" "$target_sha"; then
+                unchanged=$((unchanged + 1))
+              else
+                git switch -C sync-upstream-master "$target_sha"
+                if git merge --no-ff --no-edit -m 'chore: merge upstream/master into fork' "$source_sha"; then
+                  git push origin 'HEAD:refs/heads/master'
+                  merged=$((merged + 1))
+                  echo "| master | Merged upstream without overwriting fork changes |" >> "$GITHUB_STEP_SUMMARY"
+                else
+                  git merge --abort || true
+                  skipped=$((skipped + 1))
+                  echo "::error title=Merge conflict::master was not changed. Resolve upstream differences manually."
+                  echo "| master | Skipped: merge conflict |" >> "$GITHUB_STEP_SUMMARY"
+                fi
+              fi
+
+            else
+              # Never force-push or reset an independently edited fork branch.
+              skipped=$((skipped + 1))
+              echo "::warning title=Diverged branch::$branch was left unchanged to protect fork commits."
+              echo "| $branch | Skipped: diverged history |" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done < <(git for-each-ref --format='%(refname:strip=3)' refs/remotes/upstream)
+
+          {
+            echo ''
+            echo "Created: $created; fast-forwarded: $fast_forwarded; merged: $merged; unchanged: $unchanged; skipped: $skipped."
+            echo 'No branches were force-pushed or deleted.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if (( skipped > 0 )); then
+            echo "::error title=Manual review needed::$skipped branches need manual attention."
+            exit 1
+          fi
