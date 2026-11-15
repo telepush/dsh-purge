@@ -1,6 +1,6 @@
 # 安装、升级与故障排查
 
-当前版本 **1.6.86**。面向用户与协助安装的 Agent。支持的安装器环境：Linux CLI/Web；macOS Desktop；Windows 11 的 PowerShell 5.1/7。完整 Windows 宿主补丁及界面验收与安装器测试分开，不能因安装通过就宣称全部功能正常。
+当前版本 **1.7.14**。面向用户与协助安装的 Agent。支持的安装器环境：Linux CLI/Web；macOS Desktop；Windows 11 的 PowerShell 5.1/7。完整 Windows 宿主补丁及界面验收与安装器测试分开，不能因安装通过就宣称全部功能正常。
 
 ## 安装前
 
@@ -8,6 +8,17 @@
 - 默认数据目录 `~/.dsh`；旧 Desktop CLI 默认 profile `desktop`；带独立 `@deepseek-ai/dsh` CLI 的新桌面壳及 CLI/Web 默认 `web`。不同目录/profile 必须显式指定，不能自动选另一个实例。
 - 保留正在运行的任务；安装不会停止进程或自动重启。用户在任务结束后手动重开。
 - 不需要管理员权限或全局 Node/pnpm；Desktop 入口使用该应用的 Electron 运行时和 CLI。遇到权限问题先核对路径，不建议盲目提权。
+
+## 手动选择插件源码目录
+
+从 GitHub 下载 Source code ZIP 或 clone 后，进入同时含有插件的 `package.json` 和 `package-lock.json` 的目录。在该目录用 Node.js 和 npm 执行以下两条命令，两条均成功后再去 DSH 选择这个目录。下载 ZIP 的外层解压目录可能还有一层同名子目录。
+
+```sh
+npm ci --omit=dev --ignore-scripts
+node --input-type=module -e "await import('./lib/index.js'); console.log('插件入口加载成功')"
+```
+
+源码归档不包含运行依赖。报错若点名缺少 `yaml`，先核对执行目录和 npm 的退出状态。其它模块或语法错误请保留原报错。通过官方 CLI 添加发行 TGZ 时由包管理器解析依赖。
 
 ## pnpm 源码工作区的 Web 升级与回滚
 
@@ -220,3 +231,9 @@ macOS 不复制顶层 `Info.plist`，不创建 `.app` 路径，不通过 Finder�
 症状是安装另一个插件时，pnpm 报错的地址却是 Purge 的 `releases/latest/download`。在插件页停用只会改变加载状态，profile 依赖仍会参与解析。
 
 取得包含此修复的发行包并按上文核对 SHA256 后，用该包解出的 `bin/community.js migrate <已校验的本地 tgz 路径>` 对原 profile 执行迁移。保留原 DSH_HOME 和 DSH_PROFILE。迁移器会把本项目已识别的旧浮动地址替换为本机持久归档，已停用的插件继续停用。迁移失败会恢复原清单；发生错误时保留报错用于诊断。
+
+### Windows 官方桌面更新交接（主分支）
+
+从 DSH 确认安装官方桌面更新后，社区版会在 desktop 和 web profile 中查找交接助手，兼容两个包名 `dsh-purge-community` 和 `dsh-purge`。普通单文件更新会先比对官方更新器提供的 SHA512、目标版本和 DeepSeek 的 Authenticode 发布者，等待桌面正常退出，再运行安装器。整个过程不自动重写更新后的宿主。
+
+如果更新后版本未变，可查看 `<DSH_HOME>/logs/official-installer/update-*/result.jsonl` 的最后一条记录。`waiting-for-exit` 表示助手仍在等原桌面进程退出，`failed` 会记录失败原因，`installed` 表示安装器返回成功，目标 EXE 的 FileVersion 也符合预期。分包和需要提权的安装由 DSH 官方更新器直接处理，请查看官方安装器日志。

@@ -90,6 +90,14 @@ test('Windows native sharing violation retries, permanent collision fails withou
     assert.equal(collision.observed.error.win32_code,183);
     assert.equal(collision.backupText,'existing backup');
     assert.equal(collision.originalExists,true);
+    const blocked=result.results.find(r=>r.scenario==='locked_state');
+    assert.equal(blocked.exited,true);
+    assert.equal(blocked.exitCode,1);
+    assert.equal(blocked.final?.phase,'starting','no acknowledgement was persisted');
+    assert.equal(blocked.backupExists,false);
+    assert.equal(fs.readFileSync(path.join(fixtureRoot,'locked_state.asar'),'utf8'),'original fixture');
+    const diagnostic=fs.readFileSync(path.join(fixtureRoot,'locked_state.asar.json.log'),'utf8');
+    assert.match(diagnostic,/failed_to_save_failure primary_hresult=-?\d+ primary_win32=\d+ state_write_hresult=-?\d+/);
     assert.equal(fs.readFileSync(path.join(fixtureRoot,'collision.asar'),'utf8'),'original fixture');
   } finally {
     fs.rmSync(root,{recursive:true,force:true});
@@ -97,7 +105,11 @@ test('Windows native sharing violation retries, permanent collision fails withou
   }
 });
 
-test('Windows reports a created helper that exits before its first acknowledgement', {
+for (const [scenario, script, exitCode] of [
+  ['script exits normally', 'exit 0', 0],
+  ['script returns nonzero to PowerShell', 'exit 5', 1],
+  ['PowerShell process exits with 5', '[Environment]::Exit(5)', 5],
+]) test(`Windows reports the helper process exit separately: ${scenario}`, {
   skip: process.platform !== 'win32',
 }, async t => {
   const {scheduleWindowsAsarHandoff} = await import('../lib/windows-asar-handoff.js');
@@ -111,7 +123,7 @@ test('Windows reports a created helper that exits before its first acknowledgeme
       const {token} = JSON.parse(fs.readFileSync(statePath, 'utf8'));
       const helper = path.join(os.tmpdir(), 'dsh-purge-handoff-' + token + '.ps1');
       t.after(() => fs.rmSync(helper, {force:true}));
-      fs.writeFileSync(helper, 'exit 0\n');
+      fs.writeFileSync(helper, script + '\n');
       return spawn(command, args, options);
     }
   });
@@ -125,5 +137,25 @@ test('Windows reports a created helper that exits before its first acknowledgeme
   const log = fs.readFileSync(statePath + '.broker.log', 'utf8');
   assert.match(log, /child_pid=[1-9]\d*/);
   assert.match(log, /before acknowledging startup|did not acknowledge startup/);
+  assert.match(state.detail, /broker_exit_code=1/);
+  // On locked-down systems a short-lived helper may disappear before a handle opens.
+  const observed = /child_exit_code=(\d+|unknown)/.exec(log)?.[1];
+  assert.ok(observed === String(exitCode) || observed === 'unknown', log);
   assert.equal(fs.readFileSync(asar, 'utf8'), 'original');
+});
+
+test('concurrent state readers see complete JSON through archive lock retries and offline rollback', {
+  skip: process.platform !== 'win32',
+}, t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'purge-state-json-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const helper = path.join(root, 'helper.ps1');
+  fs.writeFileSync(helper, WINDOWS_ASAR_HANDOFF_PS1, 'utf8');
+  const fixture = fileURLToPath(new URL('./fixtures/windows-handoff-state-reader.ps1', import.meta.url));
+  const stdout = execFileSync('powershell.exe', ['-NoProfile', '-File', fixture, '-Helper', helper],
+    { encoding: 'utf8', timeout: 40000 });
+  const result = JSON.parse(stdout);
+  assert.ok(result.reads >= 3);
+  assert.equal(result.lockCycles, 3);
+  assert.equal(result.rollback, true);
 });

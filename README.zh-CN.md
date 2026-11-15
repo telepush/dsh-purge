@@ -9,30 +9,23 @@
 [![Release](https://img.shields.io/github/v/release/kingcharleslzy-ai/dsh-purge?label=release)](https://github.com/kingcharleslzy-ai/dsh-purge/releases)
 [![Checks](https://github.com/kingcharleslzy-ai/dsh-purge/actions/workflows/community.yml/badge.svg)](https://github.com/kingcharleslzy-ai/dsh-purge/actions/workflows/community.yml)
 
-当前版本 **1.6.86** · 适配 **DSH Desktop 0.2.2-rc.1**（0.2.1-rc.1 / rc.2 / rc.3 / rc.5 同样通过） · [English](docs/README.en.md)
+当前版本 **1.7.14** · 适配 **DSH Desktop 0.2.2-rc.3**（0.2.2-rc.1 / 0.2.1-rc.1 / rc.2 / rc.3 / rc.5 同样通过） · [English](docs/README.en.md)
 
-1.6.86 为已授权测试入口增加一次性命令执行挑战，区分文件写入与命令执行。[发行说明](https://github.com/kingcharleslzy-ai/dsh-purge/releases/tag/v1.6.86)。
+1.7.14 让侧栏与插件详情页共享同一份 Purge 设置，并同步维护页的更新偏好与错误状态。[发行说明](https://github.com/kingcharleslzy-ai/dsh-purge/releases/tag/v1.7.14)。
 
-**原项目与作者**：基于 [小杨 / YuJunZhiXue 的 dsh-purge](https://github.com/YuJunZhiXue/dsh-purge) 独立维护。原仓库已恢复；保留原作者署名、版权与 MIT 许可证。社区版由本仓库维护，并非原作者官方发行。
+**原项目与作者**：小杨 / YuJunZhiXue 是历史上游 dsh-purge 的作者署名。本仓库独立维护社区版，保留上游版权和 MIT 许可证。历史署名不代表对当前同名 GitHub 账号身份的核实。详见[署名记录](NOTICE.md)与[许可证](LICENSE)。
 
 </div>
 
 ---
 
-## 搭配：本机出图（Qwen Studio）
+## 搭配插件 · [DSH-Spicy](https://github.com/kingcharleslzy-ai/DSH-Spicy)
 
-破甲之后最直接的玩法，是把「生图」也搬到本机——不用网页、不用会员、不把提示词发到别人服务器。
+**完美适配 purge 的 nsfw content creation 插件**
 
-配套插件 **Qwen Studio**（`dsh-qwen-studio`）把 Qwen Image 2.1 接进 DSH：
+用 Qwen Image 2.1 为成年虚构角色制作写真和插画，用参考图、LoRA 或蒙版调整造型。选定一张图后，用 MiniMax H3 拍成有声镜头，也可以让 Agent 按角色卡做分镜、逐镜审片，再剪成完整的成人向短片。图像和视频模型可部署在本机或自己的 GPU 服务器。
 
-- **Apple Silicon Mac**：MLX / MFLUX 本机推理，模型用时加载、空闲释放；
-- **Windows / Linux + NVIDIA**：连你自己的 GPU 网关（ComfyUI 或 vLLM-Omni 协议），也支持 SSH 按需拉起；
-- 支持参考图编辑（按图改画风、换材质）、LoRA、ControlNet、蒙版、整套预设、图库与批量任务；
-- 装好之后，会话里直接说「画一张…」或「把这张改成水彩」，Agent 调用 `qwen_generate_image` 并把图返回到对话里。
-
-**组合效果**：破甲让 Agent 不再反复确认「要不要画」，出图插件让它真的画出来，全程在你自己的机器上完成。
-
-**仓库**：[kingcharleslzy-ai/dsh-qwen-studio](https://github.com/kingcharleslzy-ai/dsh-qwen-studio) · **下载**：[最新 Releases](https://github.com/kingcharleslzy-ai/dsh-qwen-studio/releases/latest) · **安装与硬件自查**：[docs/SETUP.md](https://github.com/kingcharleslzy-ai/dsh-qwen-studio/blob/main/docs/SETUP.md)（先看「这台机器能不能跑」再动手）
+[打开 DSH-Spicy 的 GitHub 仓库](https://github.com/kingcharleslzy-ai/DSH-Spicy)
 
 ## 它是什么
 
@@ -74,6 +67,8 @@ dsh-purge Community 是一个跑在你自己机器上的 Harness 附加组件。
 
 ## 安装
 
+手动选择 GitHub 源码文件夹时，先在含 `package-lock.json` 的插件根目录运行 `npm ci --omit=dev --ignore-scripts`，再选择该目录。发行 TGZ 走下方官方安装流程。
+
 **DSH 官方入口负责安装插件；下面的社区安装器由本仓库维护，不是 DeepSeek 官方脚本。** 首次安装可用官方界面或 CLI；已经装过 `dsh-purge` / 旧独立面板时，用社区安装器原地迁移，不要先卸载。安装、应用宿主补丁、手动重启是独立动作。
 
 ### 方式一：DSH 官方界面（首次安装）
@@ -89,7 +84,7 @@ dsh-purge Community 是一个跑在你自己机器上的 Harness 附加组件。
 下面命令适用于**已经安装 `dsh` 命令、且使用 `web` profile 的 CLI/Web 用户**，在 macOS/Linux 终端或 Windows PowerShell 中运行。桌面版用户优先用上面的界面；不要为了安装插件再用 `npx` 下载另一套宿主。
 
 ```sh
-dsh plugin --profile web add "https://github.com/kingcharleslzy-ai/dsh-purge/releases/download/v1.6.86/dsh-purge-community-1.6.86.tgz"
+dsh plugin --profile web add "https://github.com/kingcharleslzy-ai/dsh-purge/releases/download/v1.7.14/dsh-purge-community-1.7.14.tgz"
 ```
 
 `web` 必须与实际启动的 profile 一致；自定义数据目录需要沿用该实例的 `DSH_HOME`。命令使用本次发行的固定版本 URL；不是 `npm install -g`，也不是安装裸 npm 包名。本项目通过 GitHub 发行，**不要替换成 `add dsh-purge` 或 `add dsh-purge-community`**。官方 CLI 的安装不会额外运行我们安装器的 Release SHA256 比对及迁移快照；需要这些功能时选方式三。[官方 CLI 安装说明](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/user/develop/basic/publish.zh.md)
@@ -164,7 +159,24 @@ sh "$PURGE_INSTALL_DIR/install.sh" --dry-run
 - 顶部一句话说明当前状态，主操作是「应用」；
 - 其余分区折叠，说明收进 `?`，需要时再展开；
 - 维护页可看最近动作、备份占用、更新偏好；
-- 支持隐藏不用的入口（例如回退按钮），只影响显示。
+- 会话输入框的回退按钮默认隐藏。在 **Purge → 更多 → 会话外观** 中可随时显示或隐藏；当前页面立即生效。已有明确设置会保留，使用 CLI 切换后请刷新页面。
+
+Web 面板默认接受回环地址和宿主配置的监听地址。通过自有反向代理访问时，可以在启动 Web 服务的环境中用 `PURGE_TRUSTED_HOSTS` 列出需要接受的主机名，以逗号分隔。已有的 Origin 和跨站检查仍然生效。
+
+技能压缩包支持 ZIP（存储或 Deflate）、TAR 和 TGZ。导入只接受普通文件和目录，检查路径、条目数和解压大小，校验通过后才安装技能。
+
+### 在 dsh-go 中查看面板
+
+手机显示的是当前所选 DSH 宿主的状态和记录。先确认该宿主的 Web 配置已加载 Purge，再按连接方式打开面板。
+
+| 当前宿主 | 在 dsh-go 中打开 Purge |
+| --- | --- |
+| 通过 SSH 连接电脑 | 连接电脑后打开「Chats → Switch to Web」。在 Web 视图点左上角「Chats and workspaces」，在「Global panels」中点「Purge」。 |
+| 手机本机引擎 | 选择「This phone」，等引擎显示「Running」。打开「Chats → All features（全部功能）」，点「Purge」面板。 |
+
+面板顶部显示宿主和插件版本。在「状态」页的维护区点「最近动作」，可查看当前宿主的操作记录。
+
+**验收范围**仅限 Android 15 ARM64 模拟器上的只读功能。测试使用 dsh-go 1.0.15 和 DSH 0.2.2-rc.1，通过只读测试后端核对了版本、状态、诊断和最近动作。SSH 测试使用 Purge 1.6.92，手机本机引擎还复测了 1.7.14。真机和写入操作（应用补丁、升级、回滚）尚未验收。
 
 ## 常用命令
 
@@ -191,8 +203,9 @@ sh "$PURGE_INSTALL_DIR/install.sh" --dry-run
 
 | 组件 | 值 |
 | --- | --- |
-| 插件 | `dsh-purge-community` 1.6.86 |
-| 已验证宿主 | DSH Desktop 0.2.2-rc.1 / 0.2.1-rc.1 / 0.2.1-rc.2 / 0.2.1-rc.3 / 0.2.1-rc.5 |
+| 插件 | `dsh-purge-community` 1.7.14 |
+| 已验证宿主 | DSH Desktop 0.2.2-rc.3 / 0.2.2-rc.2 / 0.2.2-rc.1 / 0.2.1-rc.1 / 0.2.1-rc.2 / 0.2.1-rc.3 / 0.2.1-rc.5 |
+| 0.2.2-rc.2 | 补丁 74 applied / 零漂移，自检与破甲/回退回归在 macOS 通过；Windows 仅验证预设卡片与启动诊断，未复测补丁。 |
 | 其它宿主 | 允许安装，自检会标「未验证」；先看 `diagnose` |
 | Node | ≥18（桌面版自带运行时即可）；红队工具需 ≥22.5（`node:sqlite`） |
 
@@ -203,6 +216,8 @@ purge-community selfcheck --json     # 先看哪一层不是 ok
 purge-community diagnose             # 锚点漂移时看候选位置
 purge-community audit --limit 20     # 最近动作
 ```
+
+本项目新发行的补丁号使用 0–99，不补前导零；历史版本保留原编号。见[发行版本号](docs/MAINTENANCE.md#发行版本号)。
 
 面板打不开时，先确认版本一致，再按 [维护文档](docs/MAINTENANCE.md) 恢复；不要直接覆盖 `Resources/app`。
 
@@ -255,10 +270,11 @@ npm run smoke            # 发行包冒烟
     <td align="center" width="120"><a href="https://github.com/21hbguo"><img src="https://avatars.githubusercontent.com/u/139569698?s=112" width="56" height="56" alt="21hbguo" /><br /><sub>21hbguo</sub></a></td>
     <td align="center" width="120"><a href="https://github.com/AkiraNyx"><img src="https://avatars.githubusercontent.com/u/176532870?s=112" width="56" height="56" alt="AkiraNyx" /><br /><sub>AkiraNyx</sub></a></td>
     <td align="center" width="120"><a href="https://github.com/cracer4869"><img src="https://avatars.githubusercontent.com/u/46320829?s=112" width="56" height="56" alt="cracer4869" /><br /><sub>cracer4869</sub></a></td>
+    <td align="center" width="120"><a href="https://github.com/dropcake333"><img src="https://avatars.githubusercontent.com/u/291205689?s=112" width="56" height="56" alt="dropcake333" /><br /><sub>dropcake333</sub></a></td>
     <td align="center" width="120"><a href="https://github.com/fomaper"><img src="https://avatars.githubusercontent.com/u/38674512?s=112" width="56" height="56" alt="fomaper" /><br /><sub>fomaper</sub></a></td>
-    <td align="center" width="120"><a href="https://github.com/Kilig1058674225"><img src="https://avatars.githubusercontent.com/u/68159061?s=112" width="56" height="56" alt="Kilig1058674225" /><br /><sub>Kilig1058674225</sub></a></td>
   </tr>
   <tr>
+    <td align="center" width="120"><a href="https://github.com/Kilig1058674225"><img src="https://avatars.githubusercontent.com/u/68159061?s=112" width="56" height="56" alt="Kilig1058674225" /><br /><sub>Kilig1058674225</sub></a></td>
     <td align="center" width="120"><a href="https://github.com/Legeo969"><img src="https://avatars.githubusercontent.com/u/79903511?s=112" width="56" height="56" alt="Legeo969" /><br /><sub>Legeo969</sub></a></td>
     <td align="center" width="120"><a href="https://github.com/LinyiAIGC"><img src="https://avatars.githubusercontent.com/u/68159061?s=112" width="56" height="56" alt="LinyiAIGC" /><br /><sub>LinyiAIGC</sub></a></td>
     <td align="center" width="120"><a href="https://github.com/lyufeng000"><img src="https://avatars.githubusercontent.com/u/168790556?s=112" width="56" height="56" alt="lyufeng000" /><br /><sub>lyufeng000</sub></a></td>
@@ -269,6 +285,8 @@ npm run smoke            # 发行包冒烟
   <tr>
     <td align="center" width="120"><a href="https://github.com/TLcmmmm"><img src="https://avatars.githubusercontent.com/u/167976723?s=112" width="56" height="56" alt="TLcmmmm" /><br /><sub>TLcmmmm</sub></a></td>
     <td align="center" width="120"><a href="https://github.com/Tofu707"><img src="https://avatars.githubusercontent.com/u/178003727?s=112" width="56" height="56" alt="Tofu707" /><br /><sub>Tofu707</sub></a></td>
+    <td align="center" width="120"><a href="https://github.com/xinspark"><img src="https://avatars.githubusercontent.com/u/109896752?s=112" width="56" height="56" alt="xinspark" /><br /><sub>xinspark</sub></a></td>
+    <td align="center" width="120"><a href="https://github.com/YifanHere"><img src="https://avatars.githubusercontent.com/u/62582492?s=112" width="56" height="56" alt="YifanHere" /><br /><sub>YifanHere</sub></a></td>
   </tr>
 </table>
 <!-- CONTRIBUTORS:END -->

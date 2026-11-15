@@ -8,13 +8,17 @@ A self-hosted add-on for DeepSeek Harness (known in the community as a 破甲 / 
 
 [![Release](https://img.shields.io/github/v/release/kingcharleslzy-ai/dsh-purge?label=release)](https://github.com/kingcharleslzy-ai/dsh-purge/releases)
 
-Current version 1.6.86 · targets **DSH Desktop 0.2.2-rc.1** (0.2.1-rc.1 / rc.2 / rc.3 / rc.5 also pass)
+Current version 1.7.14 · targets **DSH Desktop 0.2.2-rc.3** (0.2.2-rc.1 / 0.2.1-rc.1 / rc.2 / rc.3 / rc.5 also pass)
 
 **Original project and author:** independently maintained from [dsh-purge by 小杨 / YuJunZhiXue](https://github.com/YuJunZhiXue/dsh-purge). The original repository is available again. Original attribution, copyright and the MIT license are retained; this community distribution is not an official upstream release.
 
 </div>
 
 ---
+
+## Companion plugin · [DSH-Spicy](https://github.com/kingcharleslzy-ai/DSH-Spicy)
+
+Create NSFW portraits and illustrations of fictional adults with Qwen Image 2.1. Use a portrait as a MiniMax H3 reference for a shot with sound, or have your agent storyboard, review and edit a multi-shot film on your own hardware. [Open the DSH-Spicy GitHub repository](https://github.com/kingcharleslzy-ai/DSH-Spicy).
 
 ## What it is
 
@@ -51,7 +55,7 @@ Local learning, personal projects, automation experiments and maintenance work. 
 - CLI/Web users who already have `dsh` on PATH and use the `web` profile can use the official command below. Desktop users should not download another npx host to install into their existing desktop profile.
 
 ```sh
-dsh plugin --profile web add "https://github.com/kingcharleslzy-ai/dsh-purge/releases/download/v1.6.86/dsh-purge-community-1.6.86.tgz"
+dsh plugin --profile web add "https://github.com/kingcharleslzy-ai/dsh-purge/releases/download/v1.7.14/dsh-purge-community-1.7.14.tgz"
 ```
 
 Use the actual instance's profile and `DSH_HOME`. This project distributes via GitHub; do not substitute bare npm package names. The official command does not run our extra Release SHA256 check, migration snapshot or rollback wrapper.
@@ -72,13 +76,15 @@ A full page in the left sidebar: one line of state at the top, "Apply" as the pr
 
 ## Updates
 
-1.6.76 restores preset registration on DSH 0.2.2-rc.1 and verifies both observation methods on older hosts. See the [release notes](releases/1.6.76.md).
+1.7.14 shares the same Purge settings between the sidebar and plugin detail pages, with synchronized update preferences and error state. See the [release notes](https://github.com/kingcharleslzy-ai/dsh-purge/releases/tag/v1.7.14).
 
 Two separate preferences (check / install), default check-only every six hours. Installing never restarts the app — you decide when to reopen it.
 
 ## Compatibility
 
-Plugin `dsh-purge-community` 1.6.86 · verified on DSH Desktop 0.2.2-rc.1 / 0.2.1-rc.1 / rc.2 / rc.3 / rc.5 · Node ≥ 18.
+On DSH 0.2.2-rc.2 the 86 patches apply as 74 applied / 0 drift and selfcheck is ok on macOS; bypass gates and the minified rewind anchors were verified there. Windows coverage for this host build is limited to preset cards and startup diagnostics.
+
+Plugin `dsh-purge-community` 1.7.14 · verified on DSH Desktop 0.2.2-rc.3 / 0.2.2-rc.2 / 0.2.2-rc.1 / 0.2.1-rc.1 / rc.2 / rc.3 / rc.5 · Node ≥ 18.
 
 ## Troubleshooting
 
@@ -87,6 +93,8 @@ purge-community selfcheck --json
 purge-community diagnose
 purge-community audit --limit 20
 ```
+
+New releases use patch numbers 0–99 without leading zeros. Existing releases keep their original numbers. See the [release numbering policy](MAINTENANCE.md#发行版本号).
 
 If the panel does not open, confirm both sides run the same version, then follow [MAINTENANCE.md](MAINTENANCE.md); do not overwrite `Resources/app` directly.
 
@@ -137,10 +145,11 @@ Thank you to the original author, code contributors, and everyone who provided r
     <td align="center" width="120"><a href="https://github.com/21hbguo"><img src="https://avatars.githubusercontent.com/u/139569698?s=112" width="56" height="56" alt="21hbguo" /><br /><sub>21hbguo</sub></a></td>
     <td align="center" width="120"><a href="https://github.com/AkiraNyx"><img src="https://avatars.githubusercontent.com/u/176532870?s=112" width="56" height="56" alt="AkiraNyx" /><br /><sub>AkiraNyx</sub></a></td>
     <td align="center" width="120"><a href="https://github.com/cracer4869"><img src="https://avatars.githubusercontent.com/u/46320829?s=112" width="56" height="56" alt="cracer4869" /><br /><sub>cracer4869</sub></a></td>
+    <td align="center" width="120"><a href="https://github.com/dropcake333"><img src="https://avatars.githubusercontent.com/u/291205689?s=112" width="56" height="56" alt="dropcake333" /><br /><sub>dropcake333</sub></a></td>
     <td align="center" width="120"><a href="https://github.com/fomaper"><img src="https://avatars.githubusercontent.com/u/38674512?s=112" width="56" height="56" alt="fomaper" /><br /><sub>fomaper</sub></a></td>
-    <td align="center" width="120"><a href="https://github.com/Kilig1058674225"><img src="https://avatars.githubusercontent.com/u/68159061?s=112" width="56" height="56" alt="Kilig1058674225" /><br /><sub>Kilig1058674225</sub></a></td>
   </tr>
   <tr>
+    <td align="center" width="120"><a href="https://github.com/Kilig1058674225"><img src="https://avatars.githubusercontent.com/u/68159061?s=112" width="56" height="56" alt="Kilig1058674225" /><br /><sub>Kilig1058674225</sub></a></td>
     <td align="center" width="120"><a href="https://github.com/Legeo969"><img src="https://avatars.githubusercontent.com/u/79903511?s=112" width="56" height="56" alt="Legeo969" /><br /><sub>Legeo969</sub></a></td>
     <td align="center" width="120"><a href="https://github.com/LinyiAIGC"><img src="https://avatars.githubusercontent.com/u/68159061?s=112" width="56" height="56" alt="LinyiAIGC" /><br /><sub>LinyiAIGC</sub></a></td>
     <td align="center" width="120"><a href="https://github.com/lyufeng000"><img src="https://avatars.githubusercontent.com/u/168790556?s=112" width="56" height="56" alt="lyufeng000" /><br /><sub>lyufeng000</sub></a></td>
@@ -151,6 +160,8 @@ Thank you to the original author, code contributors, and everyone who provided r
   <tr>
     <td align="center" width="120"><a href="https://github.com/TLcmmmm"><img src="https://avatars.githubusercontent.com/u/167976723?s=112" width="56" height="56" alt="TLcmmmm" /><br /><sub>TLcmmmm</sub></a></td>
     <td align="center" width="120"><a href="https://github.com/Tofu707"><img src="https://avatars.githubusercontent.com/u/178003727?s=112" width="56" height="56" alt="Tofu707" /><br /><sub>Tofu707</sub></a></td>
+    <td align="center" width="120"><a href="https://github.com/xinspark"><img src="https://avatars.githubusercontent.com/u/109896752?s=112" width="56" height="56" alt="xinspark" /><br /><sub>xinspark</sub></a></td>
+    <td align="center" width="120"><a href="https://github.com/YifanHere"><img src="https://avatars.githubusercontent.com/u/62582492?s=112" width="56" height="56" alt="YifanHere" /><br /><sub>YifanHere</sub></a></td>
   </tr>
 </table>
 <!-- CONTRIBUTORS:END -->
