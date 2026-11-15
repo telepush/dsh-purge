@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: upstream-branch-sync
@@ -14,13 +14,25 @@ concurrency:
 
 jobs:
   sync:
+    if: github.repository == 'telepush/dsh-purge'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
+      - name: Require workflow-capable token
+        shell: bash
+        env:
+          UPSTREAM_SYNC_TOKEN: ${{ secrets.UPSTREAM_SYNC_TOKEN }}
+        run: |
+          if [[ -z "$UPSTREAM_SYNC_TOKEN" ]]; then
+            echo '::error title=Missing token::Set UPSTREAM_SYNC_TOKEN with Contents and Workflows read/write permission for telepush/dsh-purge.'
+            exit 1
+          fi
+
       - name: Check out the fork
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.UPSTREAM_SYNC_TOKEN }}
           persist-credentials: true
 
       - name: Sync branches without force pushes or deletes
@@ -41,6 +53,7 @@ jobs:
           merged=0
           unchanged=0
           skipped=0
+          push_failed=0
 
           {
             echo '## Upstream branch synchronization'
@@ -59,9 +72,14 @@ jobs:
             source_sha=$(git rev-parse "$source_ref^{commit}")
 
             if ! git show-ref --verify --quiet "$target_ref"; then
-              git push origin "$source_sha:refs/heads/$branch"
-              created=$((created + 1))
-              echo "| $branch | New branch created |" >> "$GITHUB_STEP_SUMMARY"
+              if git push origin "$source_sha:refs/heads/$branch"; then
+                created=$((created + 1))
+                echo "| $branch | New branch created |" >> "$GITHUB_STEP_SUMMARY"
+              else
+                push_failed=$((push_failed + 1))
+                echo "::error title=Push rejected::$branch could not be created."
+                echo "| $branch | Creation rejected |" >> "$GITHUB_STEP_SUMMARY"
+              fi
               continue
             fi
 
@@ -71,9 +89,14 @@ jobs:
 
             elif git merge-base --is-ancestor "$target_sha" "$source_sha"; then
               # Fast-forward only. Never overwrite commits made in the fork.
-              git push origin "$source_sha:refs/heads/$branch"
-              fast_forwarded=$((fast_forwarded + 1))
-              echo "| $branch | Fast-forwarded |" >> "$GITHUB_STEP_SUMMARY"
+              if git push origin "$source_sha:refs/heads/$branch"; then
+                fast_forwarded=$((fast_forwarded + 1))
+                echo "| $branch | Fast-forwarded |" >> "$GITHUB_STEP_SUMMARY"
+              else
+                push_failed=$((push_failed + 1))
+                echo "::error title=Push rejected::$branch could not be fast-forwarded."
+                echo "| $branch | Fast-forward rejected |" >> "$GITHUB_STEP_SUMMARY"
+              fi
 
             elif [[ "$branch" == master ]]; then
               # This workflow is stored on the fork's master branch, so that
@@ -83,9 +106,14 @@ jobs:
               else
                 git switch -C sync-upstream-master "$target_sha"
                 if git merge --no-ff --no-edit -m 'chore: merge upstream/master into fork' "$source_sha"; then
-                  git push origin 'HEAD:refs/heads/master'
-                  merged=$((merged + 1))
-                  echo "| master | Merged upstream without overwriting fork changes |" >> "$GITHUB_STEP_SUMMARY"
+                  if git push origin 'HEAD:refs/heads/master'; then
+                    merged=$((merged + 1))
+                    echo "| master | Merged upstream without overwriting fork changes |" >> "$GITHUB_STEP_SUMMARY"
+                  else
+                    push_failed=$((push_failed + 1))
+                    echo '::error title=Push rejected::master could not be pushed; no remote changes made.'
+                    echo '| master | Merge push rejected |' >> "$GITHUB_STEP_SUMMARY"
+                  fi
                 else
                   git merge --abort || true
                   skipped=$((skipped + 1))
@@ -104,11 +132,11 @@ jobs:
 
           {
             echo ''
-            echo "Created: $created; fast-forwarded: $fast_forwarded; merged: $merged; unchanged: $unchanged; skipped: $skipped."
+            echo "Created: $created; fast-forwarded: $fast_forwarded; merged: $merged; unchanged: $unchanged; skipped: $skipped; push failures: $push_failed."
             echo 'No branches were force-pushed or deleted.'
           } >> "$GITHUB_STEP_SUMMARY"
 
-          if (( skipped > 0 )); then
-            echo "::error title=Manual review needed::$skipped branches need manual attention."
+          if (( skipped + push_failed > 0 )); then
+            echo "::error title=Manual review needed::$skipped branches skipped, $push_failed push failures. Other branches were processed."
             exit 1
           fi
