@@ -35,6 +35,11 @@ jobs:
           token: ${{ secrets.UPSTREAM_SYNC_TOKEN }}
           persist-credentials: true
 
+      - name: Set up Node.js for safe generated-doc merges
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
       - name: Sync branches without force pushes or deletes
         shell: bash
         env:
@@ -105,20 +110,31 @@ jobs:
                 unchanged=$((unchanged + 1))
               else
                 git switch -C sync-upstream-master "$target_sha"
+                # Only generated contributor-list conflicts may be resolved automatically.
+                # The helper verifies every conflict is inside README contributor blocks,
+                # reconstructs those blocks from the merged snapshot, and checks consistency.
+                merge_ok=false
                 if git merge --no-ff --no-edit -m 'chore: merge upstream/master into fork' "$source_sha"; then
+                  merge_ok=true
+                elif node scripts/resolve-upstream-contributors.mjs && git commit --no-edit; then
+                  merge_ok=true
+                  echo '::notice title=Contributor credits merged::Generated README contributor conflicts were safely resolved.'
+                else
+                  git merge --abort || true
+                  skipped=$((skipped + 1))
+                  echo '::error title=Merge conflict::master was not changed. Non-generated or unsafe conflicts require manual review.'
+                  echo '| master | Skipped: unsafe merge conflict |' >> "$GITHUB_STEP_SUMMARY"
+                fi
+
+                if [[ "$merge_ok" == true ]]; then
                   if git push origin 'HEAD:refs/heads/master'; then
                     merged=$((merged + 1))
-                    echo "| master | Merged upstream without overwriting fork changes |" >> "$GITHUB_STEP_SUMMARY"
+                    echo "| master | Merged upstream while preserving fork changes |" >> "$GITHUB_STEP_SUMMARY"
                   else
                     push_failed=$((push_failed + 1))
                     echo '::error title=Push rejected::master could not be pushed; no remote changes made.'
                     echo '| master | Merge push rejected |' >> "$GITHUB_STEP_SUMMARY"
                   fi
-                else
-                  git merge --abort || true
-                  skipped=$((skipped + 1))
-                  echo "::error title=Merge conflict::master was not changed. Resolve upstream differences manually."
-                  echo "| master | Skipped: merge conflict |" >> "$GITHUB_STEP_SUMMARY"
                 fi
               fi
 
