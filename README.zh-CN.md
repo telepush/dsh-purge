@@ -9,11 +9,13 @@
 [![Release](https://img.shields.io/github/v/release/kingcharleslzy-ai/dsh-purge?label=release)](https://github.com/kingcharleslzy-ai/dsh-purge/releases)
 [![Checks](https://github.com/kingcharleslzy-ai/dsh-purge/actions/workflows/community.yml/badge.svg)](https://github.com/kingcharleslzy-ai/dsh-purge/actions/workflows/community.yml)
 
-当前版本 **1.7.14** · 适配 **DSH Desktop 0.2.2-rc.3**（0.2.2-rc.1 / 0.2.1-rc.1 / rc.2 / rc.3 / rc.5 同样通过） · [English](docs/README.en.md)
+当前版本 **1.7.20** · 适配 **DSH Desktop 0.2.2-rc.3**（0.2.2-rc.1 / 0.2.1-rc.1 / rc.2 / rc.3 / rc.5 同样通过） · [English](docs/README.en.md)
 
-1.7.14 让侧栏与插件详情页共享同一份 Purge 设置，并同步维护页的更新偏好与错误状态。[发行说明](https://github.com/kingcharleslzy-ai/dsh-purge/releases/tag/v1.7.14)。
+1.7.20 让审计标签说真话：`partial_refused`（先给内容后拒）与 `empty_after_retry`（重试后几乎没内容）不再算成功，并新增默认关闭的 seed 预填臂。[发行说明](https://github.com/kingcharleslzy-ai/dsh-purge/releases/tag/v1.7.20)。
 
 **原项目与作者**：小杨 / YuJunZhiXue 是历史上游 dsh-purge 的作者署名。本仓库独立维护社区版，保留上游版权和 MIT 许可证。历史署名不代表对当前同名 GitHub 账号身份的核实。详见[署名记录](NOTICE.md)与[许可证](LICENSE)。
+
+[让 AI 安装或自己安装](#安装)
 
 </div>
 
@@ -67,24 +69,33 @@ dsh-purge Community 是一个跑在你自己机器上的 Harness 附加组件。
 
 ## 安装
 
-手动选择 GitHub 源码文件夹时，先在含 `package-lock.json` 的插件根目录运行 `npm ci --omit=dev --ignore-scripts`，再选择该目录。发行 TGZ 走下方官方安装流程。
+**让 AI 安装**，把下面这句话发给能操作本机的 Agent：
 
-**DSH 官方入口负责安装插件；下面的社区安装器由本仓库维护，不是 DeepSeek 官方脚本。** 首次安装可用官方界面或 CLI；已经装过 `dsh-purge` / 旧独立面板时，用社区安装器原地迁移，不要先卸载。安装、应用宿主补丁、手动重启是独立动作。
+> 帮我把 https://github.com/kingcharleslzy-ai/dsh-purge 的最新稳定版装到我正在用的 DSH。先读仓库 AGENTS.md 的安装章节，检查有没有旧版，有就保留设置原地迁移。装好告诉我实际版本和 profile，重启由我自己操作。
 
 ### 方式一：DSH 官方界面（首次安装）
 
-1. 先打开 DSH 完成初始化。按当前官方文档，进入「插件」，点击「实验性插件」旁的「更多」，启用「自定义插件市场」；然后进入「发现 → 添加索引源」。
-2. 本项目的**社区索引**：`https://kingcharleslzy-ai.github.io/dsh-purge/index.json`。
-3. 选择 dsh-purge Community，核对来源为 `kingcharleslzy-ai/dsh-purge`、包名为 `dsh-purge-community`，确认后安装。
+1. 打开 DSH 的「插件 → 发现 → 添加索引源」。如果没有「发现」，先到「插件 → 实验性插件 → 更多」启用「自定义插件市场」。
+2. 在「添加索引源」粘贴这一行，保存后找到 **dsh-purge Community**。
 
-界面和安装协议由 DSH 提供，索引与插件由社区维护。不同 DSH 版本的入口文字可能不同；第三方 `dsh-market` 也可能有额外的筛选与迁移限制。已有旧包时请使用方式三。[官方市场说明](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/user/guide/plugin-market.zh.md)
+   ```text
+   https://kingcharleslzy-ai.github.io/dsh-purge/index.json
+   ```
+
+3. 核对仓库为 `kingcharleslzy-ai/dsh-purge`，点「安装」。完成后，到已安装插件列表查看 `dsh-purge-community` 的版本。
+
+**「安装源」通常保持原值即可。** 这个字段用来下载 `yaml` 等 npm 依赖。若详情里出现 `GET https://github.com/…/yaml` 和 404，请在「插件 → 添加插件 → 安装源」选择「npm 官方源」或你平时可用的私有 npm 源，然后重试。[查看三个地址各填哪里](docs/INSTALLATION.md#install-addresses)
+
+**已经装过旧版 Purge 或独立面板？** 直接用下方方式三备份并原地迁移。手动下载了源码 ZIP 的用户请看[从源码目录安装](docs/INSTALLATION.md#手动选择插件源码目录)。
+
+市场维护者可按[索引与安装按钮的接入说明](docs/MARKET-MIGRATION.md)同步稳定发行。
 
 ### 方式二：DSH 官方 CLI（首次安装）
 
 下面命令适用于**已经安装 `dsh` 命令、且使用 `web` profile 的 CLI/Web 用户**，在 macOS/Linux 终端或 Windows PowerShell 中运行。桌面版用户优先用上面的界面；不要为了安装插件再用 `npx` 下载另一套宿主。
 
 ```sh
-dsh plugin --profile web add "https://github.com/kingcharleslzy-ai/dsh-purge/releases/download/v1.7.14/dsh-purge-community-1.7.14.tgz"
+dsh plugin --profile web add "https://github.com/kingcharleslzy-ai/dsh-purge/releases/download/v1.7.20/dsh-purge-community-1.7.20.tgz"
 ```
 
 `web` 必须与实际启动的 profile 一致；自定义数据目录需要沿用该实例的 `DSH_HOME`。命令使用本次发行的固定版本 URL；不是 `npm install -g`，也不是安装裸 npm 包名。本项目通过 GitHub 发行，**不要替换成 `add dsh-purge` 或 `add dsh-purge-community`**。官方 CLI 的安装不会额外运行我们安装器的 Release SHA256 比对及迁移快照；需要这些功能时选方式三。[官方 CLI 安装说明](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/user/develop/basic/publish.zh.md)
@@ -176,7 +187,7 @@ Web 面板默认接受回环地址和宿主配置的监听地址。通过自有�
 
 面板顶部显示宿主和插件版本。在「状态」页的维护区点「最近动作」，可查看当前宿主的操作记录。
 
-**验收范围**仅限 Android 15 ARM64 模拟器上的只读功能。测试使用 dsh-go 1.0.15 和 DSH 0.2.2-rc.1，通过只读测试后端核对了版本、状态、诊断和最近动作。SSH 测试使用 Purge 1.6.92，手机本机引擎还复测了 1.7.14。真机和写入操作（应用补丁、升级、回滚）尚未验收。
+**验收范围**仅限 Android 15 ARM64 模拟器上的只读功能。测试使用 dsh-go 1.0.15 和 DSH 0.2.2-rc.1，通过只读测试后端核对了版本、状态、诊断和最近动作。SSH 测试使用 Purge 1.6.92，手机本机引擎还复测了 1.7.17。真机和写入操作（应用补丁、升级、回滚）尚未验收。
 
 ## 常用命令
 
@@ -203,7 +214,7 @@ Web 面板默认接受回环地址和宿主配置的监听地址。通过自有�
 
 | 组件 | 值 |
 | --- | --- |
-| 插件 | `dsh-purge-community` 1.7.14 |
+| 插件 | `dsh-purge-community` 1.7.20 |
 | 已验证宿主 | DSH Desktop 0.2.2-rc.3 / 0.2.2-rc.2 / 0.2.2-rc.1 / 0.2.1-rc.1 / 0.2.1-rc.2 / 0.2.1-rc.3 / 0.2.1-rc.5 |
 | 0.2.2-rc.2 | 补丁 74 applied / 零漂移，自检与破甲/回退回归在 macOS 通过；Windows 仅验证预设卡片与启动诊断，未复测补丁。 |
 | 其它宿主 | 允许安装，自检会标「未验证」；先看 `diagnose` |
@@ -268,22 +279,28 @@ npm run smoke            # 发行包冒烟
   <tr>
     <td align="center" width="120"><a href="https://github.com/0xnuu"><img src="https://avatars.githubusercontent.com/u/113989865?s=112" width="56" height="56" alt="0xnuu" /><br /><sub>0xnuu</sub></a></td>
     <td align="center" width="120"><a href="https://github.com/21hbguo"><img src="https://avatars.githubusercontent.com/u/139569698?s=112" width="56" height="56" alt="21hbguo" /><br /><sub>21hbguo</sub></a></td>
+    <td align="center" width="120"><a href="https://github.com/Akiiia"><img src="https://avatars.githubusercontent.com/u/74829345?s=112" width="56" height="56" alt="Akiiia" /><br /><sub>Akiiia</sub></a></td>
     <td align="center" width="120"><a href="https://github.com/AkiraNyx"><img src="https://avatars.githubusercontent.com/u/176532870?s=112" width="56" height="56" alt="AkiraNyx" /><br /><sub>AkiraNyx</sub></a></td>
+    <td align="center" width="120"><a href="https://github.com/ankepoipoi"><img src="https://avatars.githubusercontent.com/u/314255825?s=112" width="56" height="56" alt="ankepoipoi" /><br /><sub>ankepoipoi</sub></a></td>
     <td align="center" width="120"><a href="https://github.com/cracer4869"><img src="https://avatars.githubusercontent.com/u/46320829?s=112" width="56" height="56" alt="cracer4869" /><br /><sub>cracer4869</sub></a></td>
-    <td align="center" width="120"><a href="https://github.com/dropcake333"><img src="https://avatars.githubusercontent.com/u/291205689?s=112" width="56" height="56" alt="dropcake333" /><br /><sub>dropcake333</sub></a></td>
-    <td align="center" width="120"><a href="https://github.com/fomaper"><img src="https://avatars.githubusercontent.com/u/38674512?s=112" width="56" height="56" alt="fomaper" /><br /><sub>fomaper</sub></a></td>
   </tr>
   <tr>
+    <td align="center" width="120"><a href="https://github.com/djs11eee-png"><img src="https://avatars.githubusercontent.com/u/357155267?s=112" width="56" height="56" alt="djs11eee-png" /><br /><sub>djs11eee-png</sub></a></td>
+    <td align="center" width="120"><a href="https://github.com/dropcake333"><img src="https://avatars.githubusercontent.com/u/291205689?s=112" width="56" height="56" alt="dropcake333" /><br /><sub>dropcake333</sub></a></td>
+    <td align="center" width="120"><a href="https://github.com/fomaper"><img src="https://avatars.githubusercontent.com/u/38674512?s=112" width="56" height="56" alt="fomaper" /><br /><sub>fomaper</sub></a></td>
     <td align="center" width="120"><a href="https://github.com/Kilig1058674225"><img src="https://avatars.githubusercontent.com/u/68159061?s=112" width="56" height="56" alt="Kilig1058674225" /><br /><sub>Kilig1058674225</sub></a></td>
     <td align="center" width="120"><a href="https://github.com/Legeo969"><img src="https://avatars.githubusercontent.com/u/79903511?s=112" width="56" height="56" alt="Legeo969" /><br /><sub>Legeo969</sub></a></td>
     <td align="center" width="120"><a href="https://github.com/LinyiAIGC"><img src="https://avatars.githubusercontent.com/u/68159061?s=112" width="56" height="56" alt="LinyiAIGC" /><br /><sub>LinyiAIGC</sub></a></td>
-    <td align="center" width="120"><a href="https://github.com/lyufeng000"><img src="https://avatars.githubusercontent.com/u/168790556?s=112" width="56" height="56" alt="lyufeng000" /><br /><sub>lyufeng000</sub></a></td>
-    <td align="center" width="120"><a href="https://github.com/Musan-34"><img src="https://avatars.githubusercontent.com/u/279201993?s=112" width="56" height="56" alt="Musan-34" /><br /><sub>Musan-34</sub></a></td>
-    <td align="center" width="120"><a href="https://github.com/qianxuno"><img src="https://avatars.githubusercontent.com/u/179305118?s=112" width="56" height="56" alt="qianxuno" /><br /><sub>qianxuno</sub></a></td>
   </tr>
   <tr>
+    <td align="center" width="120"><a href="https://github.com/lyufeng000"><img src="https://avatars.githubusercontent.com/u/168790556?s=112" width="56" height="56" alt="lyufeng000" /><br /><sub>lyufeng000</sub></a></td>
+    <td align="center" width="120"><a href="https://github.com/Musan-34"><img src="https://avatars.githubusercontent.com/u/279201993?s=112" width="56" height="56" alt="Musan-34" /><br /><sub>Musan-34</sub></a></td>
+    <td align="center" width="120"><a href="https://github.com/nanirise"><img src="https://avatars.githubusercontent.com/u/222086913?s=112" width="56" height="56" alt="nanirise" /><br /><sub>nanirise</sub></a></td>
+    <td align="center" width="120"><a href="https://github.com/qianxuno"><img src="https://avatars.githubusercontent.com/u/179305118?s=112" width="56" height="56" alt="qianxuno" /><br /><sub>qianxuno</sub></a></td>
     <td align="center" width="120"><a href="https://github.com/telepush"><img src="https://avatars.githubusercontent.com/u/104293524?s=112" width="56" height="56" alt="telepush" /><br /><sub>telepush</sub></a></td>
     <td align="center" width="120"><a href="https://github.com/TLcmmmm"><img src="https://avatars.githubusercontent.com/u/167976723?s=112" width="56" height="56" alt="TLcmmmm" /><br /><sub>TLcmmmm</sub></a></td>
+  </tr>
+  <tr>
     <td align="center" width="120"><a href="https://github.com/Tofu707"><img src="https://avatars.githubusercontent.com/u/178003727?s=112" width="56" height="56" alt="Tofu707" /><br /><sub>Tofu707</sub></a></td>
     <td align="center" width="120"><a href="https://github.com/xinspark"><img src="https://avatars.githubusercontent.com/u/109896752?s=112" width="56" height="56" alt="xinspark" /><br /><sub>xinspark</sub></a></td>
     <td align="center" width="120"><a href="https://github.com/YifanHere"><img src="https://avatars.githubusercontent.com/u/62582492?s=112" width="56" height="56" alt="YifanHere" /><br /><sub>YifanHere</sub></a></td>

@@ -1,6 +1,6 @@
 # 安装、升级与故障排查
 
-当前版本 **1.7.14**。面向用户与协助安装的 Agent。支持的安装器环境：Linux CLI/Web；macOS Desktop；Windows 11 的 PowerShell 5.1/7。完整 Windows 宿主补丁及界面验收与安装器测试分开，不能因安装通过就宣称全部功能正常。
+当前版本 **1.7.20**。面向用户与协助安装的 Agent。支持的安装器环境：Linux CLI/Web；macOS Desktop；Windows 11 的 PowerShell 5.1/7。完整 Windows 宿主补丁及界面验收与安装器测试分开，不能因安装通过就宣称全部功能正常。
 
 ## 安装前
 
@@ -8,6 +8,22 @@
 - 默认数据目录 `~/.dsh`；旧 Desktop CLI 默认 profile `desktop`；带独立 `@deepseek-ai/dsh` CLI 的新桌面壳及 CLI/Web 默认 `web`。不同目录/profile 必须显式指定，不能自动选另一个实例。
 - 保留正在运行的任务；安装不会停止进程或自动重启。用户在任务结束后手动重开。
 - 不需要管理员权限或全局 Node/pnpm；Desktop 入口使用该应用的 Electron 运行时和 CLI。遇到权限问题先核对路径，不建议盲目提权。
+
+<a id="install-addresses"></a>
+
+## 安装窗口里的三个地址
+
+| 你正在做什么 | DSH 字段 | 填什么 |
+| --- | --- | --- |
+| 在「发现」里找到插件 | 添加索引源 | `https://kingcharleslzy-ai.github.io/dsh-purge/index.json` |
+| 在「添加插件」里直接安装 | 包名或地址 | 打开[最新稳定发行](https://github.com/kingcharleslzy-ai/dsh-purge/releases/latest)，复制 Assets 中带版本号的 `dsh-purge-community-版本号.tgz` 下载链接 |
+| 下载插件依赖（如 `yaml`） | 安装源（npm registry） | 通常保留原值；公共 npm 源是 `https://registry.npmjs.org/`，使用私有源的用户沿用有效配置 |
+
+从市场卡片点「安装」时，DSH 已经知道要装哪个插件，无需再填「包名或地址」。
+
+**如果日志出现 `ERR_PNPM_FETCH_404` 且请求路径是 `github.com/…/yaml`**，说明 pnpm 正在向 GitHub 仓库查询 npm 依赖。即使市场卡片的仓库和版本都正确，DSH 仍可能沿用安装窗口上次选择的自定义源，或宿主配置的首选源。
+
+重试时，打开「插件 → 添加插件」，在「包名或地址」粘贴上表的 TGZ 下载链接，展开「安装源」，选择「npm 官方源」或有效的私有 npm 源，再提交。若仍失败，保留第一条失败请求的主机、路径和状态码供排查，隐去凭证。Git 仓库或 TGZ 本身下载失败要按对应地址查网络。
 
 ## 手动选择插件源码目录
 
@@ -50,7 +66,7 @@ Windows 的 `DSH Desktop.exe` 与旧 `DeepSeek Harness.exe` 都可作为候选�
 
 macOS 默认要求 `/Applications/DeepSeek Harness.app`。自定义安装位置用 `DSH_APP`（指向 `.app`），自定义数据目录用 `DSH_HOME`；两次调用都传相同的 `--profile=实际名称`。Windows 支持 `-DshExe`（实际 exe 的完整路径）、`-DshHome`、`-Profile`、`-Version`。路径不唯一应停止并明确指定，不能猜测另一个副本。 macOS 安装器通过系统 `plutil` 读取 XML 或二进制 plist，要求 `CFBundleExecutable` 是包内有效的文件名；缺失、损坏、路径越界或符号链接会报错，不会回退到猜测的可执行文件。改名的应用可通过 `DSH_APP` 显式选择。应用身份依据 DSH 宿主包及 CLI 文件，不依据窗口名称或仅有 `app.asar`。这属于布局校验，不代表签名或发布者认证。
 
-`--dry-run` / `-DryRun` 会检查 profile、定位 CLI、下载发行包并核对 SHA256；**不会运行 pnpm、迁移、回滚或完整启动验证**。去掉该参数才正式安装。默认读取最新稳定 Release；要固定本次发行，shell 两次均加 `--version=1.6.48`，PowerShell 两次均加 `-Version 1.6.48`。入口脚本及 bootstrap 仍来自本仓库 master，不应把版本参数解释为固定所有下载脚本。
+`--dry-run` / `-DryRun` 会检查 profile、定位 CLI、下载发行包并核对 SHA256；**不会运行 pnpm、迁移、回滚或完整启动验证**。去掉该参数才正式安装。默认读取最新稳定 Release；要固定本次发行，为两次调用都指定同一个已发布的版本号（shell 参数 `--version=`，PowerShell 参数 `-Version`）。入口脚本及 bootstrap 仍来自本仓库 master，不应把版本参数解释为固定所有下载脚本。
 
 正式安装后检查退出码、返回版本、`backup_id`、目标 profile 的依赖/bundle 和包入口；已有进程继续运行旧代码不等于安装失败。保持进程不动，用户方便时手动重开再检查运行版本。
 
@@ -237,3 +253,11 @@ macOS 不复制顶层 `Info.plist`，不创建 `.app` 路径，不通过 Finder�
 从 DSH 确认安装官方桌面更新后，社区版会在 desktop 和 web profile 中查找交接助手，兼容两个包名 `dsh-purge-community` 和 `dsh-purge`。普通单文件更新会先比对官方更新器提供的 SHA512、目标版本和 DeepSeek 的 Authenticode 发布者，等待桌面正常退出，再运行安装器。整个过程不自动重写更新后的宿主。
 
 如果更新后版本未变，可查看 `<DSH_HOME>/logs/official-installer/update-*/result.jsonl` 的最后一条记录。`waiting-for-exit` 表示助手仍在等原桌面进程退出，`failed` 会记录失败原因，`installed` 表示安装器返回成功，目标 EXE 的 FileVersion 也符合预期。分包和需要提权的安装由 DSH 官方更新器直接处理，请查看官方安装器日志。
+
+### 工作区与会话权限
+
+新会话沿用宿主和用户选择的权限。默认保留 DSH 的文件围栏、子进程沙箱以及与扩大权限有关的审批检查。此前显式选择的权限覆盖补丁仍由 `tuning.extraPatches` 决定。
+
+升级后点「应用」，再正常退出并手动打开 DSH。迁移以宿主文件旁的 `.dshpurge.bak` 为基线，重演旧补丁并比对当前内容，只撤回能证明属于插件的权限改动。保留其它已验证的补丁和用户 profile；不会重写历史会话中已保存的权限选择。遇到残缺备份、链接或无法归属的改动，查看补丁明细中的路径及错误，保留文件和备份进行比对。
+
+权限验收需同时检查文件工具和命令子进程。DSH 的「工作区写入」还允许宿主明确指定的额外可写目录以及平台临时目录，验证越界时请使用这些目录之外的位置。
